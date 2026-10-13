@@ -13,5 +13,8 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
+    watch: {
+      ignored: ['**/public/**', '**/.git/**'],
+    },
   },
 })

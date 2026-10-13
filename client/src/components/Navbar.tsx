@@ -66,9 +66,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab, onSelec
             onClick={() => onSelectTab('dashboard')}
             className="flex items-center gap-2.5 text-left group transition-opacity hover:opacity-90 cursor-pointer"
           >
-            <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-orange-50/15 flex items-center justify-center font-bold text-white text-base">
-              P<span className="text-orange-500 text-lg leading-none">.</span>
-            </div>
+            <img
+              src="/Logo.png"
+              alt="PickMyStock"
+              className="w-8 h-8 rounded-lg object-contain bg-neutral-900 border border-orange-50/15 p-0.5"
+            />
             <div>
               <span className="font-semibold text-lg tracking-tight text-white font-['Onest']">
                 PickMyStock

@@ -59,7 +59,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
       {/* Hero Section */}
       <div className="relative text-left max-w-5xl 2xl:max-w-6xl pt-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-orange-50/15 bg-neutral-900/60 text-xs text-neutral-300 font-mono mb-4">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <img src="/Logo.png" alt="PickMyStock" className="w-3.5 h-3.5 rounded-sm object-contain" />
           <span>NSE & BSE Quantitative Decision Support</span>
         </div>
 

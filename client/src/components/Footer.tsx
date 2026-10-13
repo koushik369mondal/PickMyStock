@@ -5,7 +5,12 @@ export const Footer: React.FC = () => {
     <footer className="mt-auto border-t border-orange-50/10 bg-[#0a0a0a] text-neutral-400 text-xs py-10 px-4 sm:px-6">
       <div className="w-[92%] 2xl:w-[94%] max-w-[1600px] mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2.5 mb-2">
+            <img
+              src="/Logo.png"
+              alt="PickMyStock"
+              className="w-5 h-5 rounded object-contain"
+            />
             <span className="font-semibold text-white font-['Onest'] text-sm">
               PickMyStock
             </span>
