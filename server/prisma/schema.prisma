@@ -1,0 +1,206 @@
+// PickMyStock Prisma Schema
+// Target database: PostgreSQL (compatible with Neon and self-hosted)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Stock {
+  id            String   @id @default(uuid())
+  symbol        String   @unique
+  isin          String?
+  companyName   String
+  sector        String?
+  industry      String?
+  exchange      String   @default("NSE")
+  faceValue     Float?
+  marketCapRank Int?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  candles         PriceCandle[]
+  quotes          QuoteSnapshot[]
+  financials      FinancialStatement[]
+  ratios          FinancialRatio[]
+  recommendations RecommendationSnapshot[]
+  watchlistItems  WatchlistItem[]
+
+  @@index([symbol])
+  @@index([sector])
+  @@index([exchange])
+}
+
+model PriceCandle {
+  id               String   @id @default(uuid())
+  stockId          String
+  tradeDate        String   // YYYY-MM-DD
+  open             Float
+  high             Float
+  low              Float
+  close            Float
+  volume           BigInt
+  turnoverLakhs    Float?
+  deliveryPct      Float?
+  adjustedClose    Float
+  adjustmentFactor Float    @default(1.0)
+  provider         String   @default("bharatstock")
+  createdAt        DateTime @default(now())
+
+  stock Stock @relation(fields: [stockId], references: [id], onDelete: Cascade)
+
+  @@unique([stockId, tradeDate])
+  @@index([stockId, tradeDate])
+}
+
+model QuoteSnapshot {
+  id          String   @id @default(uuid())
+  stockId     String
+  price       Float
+  prevClose   Float
+  change      Float
+  changePct   Float
+  volume      BigInt
+  deliveryPct Float?
+  tradeDate   String
+  provider    String   @default("bharatstock")
+  createdAt   DateTime @default(now())
+
+  stock Stock @relation(fields: [stockId], references: [id], onDelete: Cascade)
+
+  @@index([stockId, createdAt])
+}
+
+model FinancialStatement {
+  id                String   @id @default(uuid())
+  stockId           String
+  periodType        String   // quarterly | annual
+  fiscalYear        String?
+  periodEndDate     String   // YYYY-MM-DD
+  revenue           Float?
+  operatingProfit   Float?
+  ebitda            Float?
+  netProfit         Float?
+  eps               Float?
+  debtEquityRatio   Float?
+  cashFlowOperating Float?
+  capex             Float?
+  freeCashFlow      Float?
+  consolidationType String?  @default("consolidated")
+  provider          String   @default("bharatstock")
+  createdAt         DateTime @default(now())
+
+  stock Stock @relation(fields: [stockId], references: [id], onDelete: Cascade)
+
+  @@unique([stockId, periodType, periodEndDate])
+  @@index([stockId, periodEndDate])
+}
+
+model FinancialRatio {
+  id                   String   @id @default(uuid())
+  stockId              String
+  asOfDate             String   // YYYY-MM-DD
+  price                Float
+  peRatio              Float?
+  pbRatio              Float?
+  roe                  Float?
+  roce                 Float?
+  dividendYield        Float?
+  week52High           Float?
+  week52Low            Float?
+  bookValuePerShare    Float?
+  eps                  Float?
+  financialsPeriodType String?
+  financialsFiscalYear String?
+  createdAt            DateTime @default(now())
+
+  stock Stock @relation(fields: [stockId], references: [id], onDelete: Cascade)
+
+  @@unique([stockId, asOfDate])
+  @@index([stockId, asOfDate])
+}
+
+model NewsArticle {
+  id            String   @id @default(uuid())
+  symbol        String
+  headline      String
+  publisher     String
+  publishedAt   String
+  url           String
+  summary       String
+  sentiment     String   @default("neutral") // positive, neutral, negative, unknown
+  isAiGenerated Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@index([symbol, publishedAt])
+}
+
+model Watchlist {
+  id        String          @id @default(uuid())
+  name      String          @default("My Watchlist")
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  items     WatchlistItem[]
+}
+
+model WatchlistItem {
+  id          String   @id @default(uuid())
+  watchlistId String
+  stockId     String?
+  symbol      String
+  addedAt     DateTime @default(now())
+
+  watchlist Watchlist @relation(fields: [watchlistId], references: [id], onDelete: Cascade)
+  stock     Stock?    @relation(fields: [stockId], references: [id], onDelete: SetNull)
+
+  @@unique([watchlistId, symbol])
+  @@index([watchlistId])
+}
+
+model RecommendationSnapshot {
+  id             String   @id @default(uuid())
+  stockId        String
+  horizon        String   // short_term | long_term
+  score          Int
+  classification String   // favorable | neutral | unfavorable | insufficient_data
+  confidence     String   // high | medium | low
+  explanation    String
+  positiveFactors Json    // Structured array of positive FactorEvidence
+  negativeFactors Json    // Structured array of negative FactorEvidence
+  importantRisks  Json    // Array of strings
+  missingData     Json    // Array of strings
+  dataTimestamp  String
+  createdAt      DateTime @default(now())
+
+  stock Stock @relation(fields: [stockId], references: [id], onDelete: Cascade)
+
+  @@index([stockId, horizon, createdAt])
+}
+
+model ChatConversation {
+  id        String        @id @default(uuid())
+  symbol    String
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  messages  ChatMessage[]
+
+  @@index([symbol])
+}
+
+model ChatMessage {
+  id             String           @id @default(uuid())
+  conversationId String
+  role           String           // user | assistant | system
+  content        String
+  toolsUsed      Json?            // Array of tool names called
+  createdAt      DateTime         @default(now())
+
+  conversation ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
